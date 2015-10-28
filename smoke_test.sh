@@ -55,21 +55,7 @@ email_notify_flag=0
 # If above command fails, log error message, and abort the execution
 log_error $? "Unable to load config file:- $CFG_FILE"
 
-environment_to_test=$1
-
-case ${environment_to_test} in
-  "Dev") URL=${DEV_URL}
-  ;;
-  "Test") URL=${TEST_URL}
-  ;;
-  "Stage") URL=${STAGE_URL}
-  ;;
-  "Prod") URL=${PROD_URL}
-  ;;
-  *)
-   log_error $? "Invalid/no environment specified: Please run as sh <script_name> <environment>"
-  ;;
-esac
+URL=$1
 
 curl_path=`whereis curl | cut -d " " -f2`
 if [ -z $curl_path ]
@@ -83,10 +69,10 @@ validate_log_dir
 $curl_path -Is $URL >> "$SCRIPTPATH/$LOG_FILE"
 log_error $? "Unable to write output of CURL Command into Log file"
 
-  # Ping Intranet URL and send an alert in case of any errors
+  # Ping URL and send an alert in case of any errors
 curl_output=`$curl_path -Is $URL  | awk '{print $2}' | head -1`
 if [ $curl_output -ne 200 -o $? -ne 0 ]
 then
   email_notify_flag=1
-  log_error $? "Unable to load URL:-$PAX_URL. please check log for further details" $email_notify_flag
+  log_error $? "Unable to load URL:-$URL. please check log for further details" $email_notify_flag
 fi
